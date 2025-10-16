@@ -41,11 +41,15 @@ jobs:
       - name: Run linter
         run: npm run lint
 
-      # 5. Run tests with coverage
+      # 5. Create migrations directory if it doesn't exist
+      - name: Ensure migrations directory exists
+        run: mkdir -p migrations
+        
+      # 6. Run tests with coverage
       - name: Run tests and generate coverage
         run: npm run coverage
 
-      # 6. Upload coverage report (optional)
+      # 7. Upload coverage report (optional)
       - name: Upload coverage report
         if: success()
         uses: actions/upload-artifact@v4

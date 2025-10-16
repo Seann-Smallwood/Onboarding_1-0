@@ -1,0 +1,2 @@
+# This file ensures the migrations directory is included in git
+# Even when empty, the migrations folder is needed by Knex.js

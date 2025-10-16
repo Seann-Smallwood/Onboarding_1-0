@@ -45,7 +45,7 @@
     "bundle:client": "npm run compile && npm pack --pack-destination ./public",
     "migrate": "knex migrate:latest",
     "migrate:make": "knex migrate:make",
-    "coverage": "nyc npm test"
+    "coverage": "nyc --reporter=lcov --reporter=text npm test"
   },
   "dependencies": {
     "@feathersjs/adapter-commons": "^5.0.35",

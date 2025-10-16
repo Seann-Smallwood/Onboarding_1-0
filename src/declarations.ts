@@ -2,11 +2,14 @@
 import { HookContext as FeathersHookContext, NextFunction } from '@feathersjs/feathers'
 import { Application as FeathersApplication } from '@feathersjs/koa'
 import { ApplicationConfiguration } from './configuration'
+import type { Knex } from 'knex'
 
 export type { NextFunction }
 
 // The types for app.get(name) and app.set(name)
-export type Configuration = ApplicationConfiguration
+export interface Configuration extends ApplicationConfiguration {
+  postgresqlClient?: Knex
+}
 
 // A mapping of service names to types. Will be extended in service files.
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type

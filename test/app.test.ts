@@ -32,7 +32,7 @@ describe('Feathers application tests', () => {
       })
       assert.fail('should never get here')
     } catch (error: unknown) {
-      const { response } = error
+      const { response } = error as any
       assert.strictEqual(response?.status, 404)
       assert.strictEqual(response?.data?.code, 404)
       assert.strictEqual(response?.data?.name, 'NotFound')

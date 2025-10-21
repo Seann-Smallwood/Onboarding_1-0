@@ -1,0 +1,118 @@
+name: Deploy to Cloud Run
+
+on:
+  # Trigger on pushes to main branch
+  push:
+    branches: [ "main" ]
+  
+  # Allow manual trigger
+  workflow_dispatch:
+
+env:
+  PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
+  REGION: us-central1
+  REPO_NAME: api-repo
+  SERVICE_NAME: my-api-service
+  IMAGE_NAME: my-api
+
+jobs:
+  test:
+    name: Test Application
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run linter
+        run: npm run lint
+
+      - name: Ensure migrations directory exists
+        run: mkdir -p migrations
+        
+      - name: Run tests and generate coverage
+        run: npm run coverage
+
+  deploy:
+    name: Build and Deploy to Cloud Run
+    runs-on: ubuntu-latest
+    needs: test
+    if: github.ref == 'refs/heads/main'
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Google Cloud CLI
+        uses: google-github-actions/setup-gcloud@v2
+        with:
+          service_account_key: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}
+          project_id: ${{ secrets.GCP_PROJECT_ID }}
+          export_default_credentials: true
+
+      - name: Configure Docker for Artifact Registry
+        run: gcloud auth configure-docker ${{ env.REGION }}-docker.pkg.dev
+
+      - name: Build Docker image
+        run: |
+          docker build \
+            --platform linux/amd64 \
+            --tag ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPO_NAME }}/${{ env.IMAGE_NAME }}:${{ github.sha }} \
+            --tag ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPO_NAME }}/${{ env.IMAGE_NAME }}:latest \
+            .
+
+      - name: Push Docker image to Artifact Registry
+        run: |
+          docker push ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPO_NAME }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
+          docker push ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPO_NAME }}/${{ env.IMAGE_NAME }}:latest
+
+      - name: Create Terraform state bucket (if not exists)
+        run: |
+          gsutil mb gs://terraform-state-${{ env.PROJECT_ID }} 2>/dev/null || echo "Bucket already exists"
+          gsutil versioning set on gs://terraform-state-${{ env.PROJECT_ID }}
+
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ~1.6.0
+
+      - name: Initialize Terraform with GCS backend
+        working-directory: ./terraform
+        run: terraform init -backend-config=backend.conf
+
+      - name: Deploy with Terraform
+        working-directory: ./terraform
+        run: |
+          terraform apply -auto-approve \
+            -var="project_id=${{ env.PROJECT_ID }}" \
+            -var="region=${{ env.REGION }}" \
+            -var="repo_name=${{ env.REPO_NAME }}" \
+            -var="service_name=${{ env.SERVICE_NAME }}" \
+            -var="image_name=${{ env.IMAGE_NAME }}"
+
+      - name: Get service URL
+        working-directory: ./terraform
+        run: |
+          SERVICE_URL=$(terraform output -raw service_url)
+          echo "🚀 Service deployed successfully!"
+          echo "Service URL: $SERVICE_URL"
+          echo "SERVICE_URL=$SERVICE_URL" >> $GITHUB_ENV
+
+      - name: Test deployment
+        run: |
+          # Wait a moment for service to be ready
+          sleep 10
+          
+          # Test health endpoint
+          curl -f "${{ env.SERVICE_URL }}/health" || exit 1
+          echo "✅ Health check passed!"
+

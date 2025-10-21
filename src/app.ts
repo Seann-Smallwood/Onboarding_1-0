@@ -23,6 +23,21 @@ app.use(errorHandler())
 app.use(parseAuthentication())
 app.use(bodyParser())
 
+// Health check endpoint
+app.use(async (ctx, next) => {
+  if (ctx.path === '/health') {
+    ctx.status = 200
+    ctx.body = { 
+      status: 'ok', 
+      timestamp: new Date().toISOString(),
+      version: '1.1.0',
+      environment: process.env.NODE_ENV || 'development'
+    }
+    return
+  }
+  await next()
+})
+
 // Configure services and transports
 app.configure(rest())
 app.configure(

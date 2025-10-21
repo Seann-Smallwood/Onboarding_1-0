@@ -119,3 +119,15 @@ dist
 .sqlite
 
 lib/
+
+# Terraform
+terraform/.terraform/
+terraform/terraform.tfstate
+terraform/terraform.tfstate.backup
+terraform/override.tf
+*.tfvars
+key.json
+
+# OS
+.DS_Store
+

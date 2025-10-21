@@ -1,0 +1,5 @@
+project_id = "geometric-wall-392517"
+region = "us-central1"
+repo_name = "api-repo"
+service_name = "my-api-service"
+image_name = "my-api"

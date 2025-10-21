@@ -1,0 +1,58 @@
+# Dependencies
+node_modules
+npm-debug.log*
+
+# Build outputs
+lib/
+dist/
+
+# Test files
+test/
+*.test.ts
+*.test.js
+coverage/
+
+# Development files
+.git
+.gitignore
+README.md
+readme.md
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# CI/CD files
+.github/
+
+# Terraform files
+terraform/
+*.tf
+*.tfstate*
+.terraform/
+
+# Docker files
+Dockerfile*
+docker-compose*
+
+# Logs
+logs/
+*.log
+
+# Documentation
+*.md
+
+# Misc
+.nyc_output
+

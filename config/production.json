@@ -1,0 +1,9 @@
+{
+  "host": "0.0.0.0",
+  "origins": ["*"],
+  "paginate": {
+    "default": 10,
+    "max": 50
+  }
+}
+

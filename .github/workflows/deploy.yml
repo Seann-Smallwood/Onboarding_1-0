@@ -63,13 +63,24 @@ jobs:
       - name: Configure Docker for Artifact Registry
         run: gcloud auth configure-docker ${{ env.REGION }}-docker.pkg.dev
 
-      - name: Build Docker image
+      - name: Disable Docker Buildx and use classic builder
         run: |
-          echo "Building Docker image..."
+          # Force Docker to use classic builder instead of buildx
+          docker buildx ls
+          export DOCKER_BUILDKIT=0
+          echo "DOCKER_BUILDKIT=0" >> $GITHUB_ENV
+
+      - name: Build Docker image
+        env:
+          DOCKER_BUILDKIT: 0
+        run: |
+          echo "Building Docker image with classic Docker builder..."
+          echo "Docker version:"
+          docker --version
           echo "Build context files:"
           ls -la  # Debug: show files in build context
           
-          # Simple docker build - GitHub Actions runners are already linux/amd64
+          # Force classic docker build (no buildx)
           docker build \
             --tag ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPO_NAME }}/${{ env.IMAGE_NAME }}:${{ github.sha }} \
             --tag ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPO_NAME }}/${{ env.IMAGE_NAME }}:latest \

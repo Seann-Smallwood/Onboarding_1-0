@@ -69,12 +69,24 @@ jobs:
       - name: Build and push Docker image
         run: |
           echo "Building and pushing Docker image..."
-          ls -la  # Debug: show files in build context
+          echo "Build context files:"
+          ls -la
           
+          # Debug: Show what variables resolve to
+          echo "PROJECT_ID: ${{ env.PROJECT_ID }}"
+          echo "REGION: ${{ env.REGION }}"
+          echo "REPO_NAME: ${{ env.REPO_NAME }}"
+          echo "IMAGE_NAME: ${{ env.IMAGE_NAME }}"
+          echo "GITHUB_SHA: ${{ github.sha }}"
+          
+          # Set variables for cleaner command
+          IMAGE_BASE="${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPO_NAME }}/${{ env.IMAGE_NAME }}"
+          
+          # Build and push with simplified syntax
           docker buildx build \
             --platform linux/amd64 \
-            --tag ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPO_NAME }}/${{ env.IMAGE_NAME }}:${{ github.sha }} \
-            --tag ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPO_NAME }}/${{ env.IMAGE_NAME }}:latest \
+            --tag "${IMAGE_BASE}:${{ github.sha }}" \
+            --tag "${IMAGE_BASE}:latest" \
             --push \
             .
 

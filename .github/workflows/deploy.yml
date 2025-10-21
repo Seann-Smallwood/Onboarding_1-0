@@ -68,10 +68,12 @@ jobs:
           echo "Build context files:"
           ls -la  # Debug: show files in build context
           
-          docker build \
+          # Use buildx explicitly since GitHub Actions enables it by default
+          docker buildx build \
             --platform linux/amd64 \
             --tag ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPO_NAME }}/${{ env.IMAGE_NAME }}:${{ github.sha }} \
             --tag ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPO_NAME }}/${{ env.IMAGE_NAME }}:latest \
+            --load \
             .
 
       - name: Push Docker image to Artifact Registry

@@ -35,7 +35,7 @@ resource "google_cloud_run_service" "api_service" {
   template {
     spec {
         containers {
-            image = "${var.region}-docker.pkg.dev/${var.project_id}/${google_artifact_registry_repository.api_repo.repository_id}/${var.image_name}:latest"
+            image = "${var.region}-docker.pkg.dev/${var.project_id}/${google_artifact_registry_repository.api_repo.repository_id}/${var.image_name}:${var.image_tag}"
             ports {
                 container_port = 8080
             }

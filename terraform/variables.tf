@@ -26,3 +26,9 @@ variable "image_name" {
   type        = string
   default     = "my-api"
 }
+
+variable "image_tag" {
+  description = "Docker image tag (e.g., git SHA or version)"
+  type        = string
+  default     = "latest"
+}

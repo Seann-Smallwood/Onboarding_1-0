@@ -112,7 +112,8 @@ jobs:
             -var="region=${{ env.REGION }}" \
             -var="repo_name=${{ env.REPO_NAME }}" \
             -var="service_name=${{ env.SERVICE_NAME }}" \
-            -var="image_name=${{ env.IMAGE_NAME }}"
+            -var="image_name=${{ env.IMAGE_NAME }}" \
+            -var="image_tag=${{ github.sha }}"
 
       - name: Get service URL
         working-directory: ./terraform

@@ -104,10 +104,24 @@ jobs:
         working-directory: ./terraform
         run: terraform init -backend-config=backend.conf
 
-      - name: Deploy with Terraform
+      - name: Terraform plan and apply
         working-directory: ./terraform
         run: |
+          # First run plan to see what Terraform wants to do
+          echo "=== Terraform Plan ==="
+          terraform plan \
+            -var="project_id=${{ env.PROJECT_ID }}" \
+            -var="region=${{ env.REGION }}" \
+            -var="repo_name=${{ env.REPO_NAME }}" \
+            -var="service_name=${{ env.SERVICE_NAME }}" \
+            -var="image_name=${{ env.IMAGE_NAME }}" \
+            -var="image_tag=${{ github.sha }}"
+          
+          echo "=== Terraform Apply ==="
+          # Apply with target to only update the Cloud Run service (avoid recreating registry)
           terraform apply -auto-approve \
+            -target=google_cloud_run_service.api_service \
+            -target=google_cloud_run_service_iam_member.public_access \
             -var="project_id=${{ env.PROJECT_ID }}" \
             -var="region=${{ env.REGION }}" \
             -var="repo_name=${{ env.REPO_NAME }}" \
